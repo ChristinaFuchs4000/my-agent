@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Chief of Staff</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --surface: #ffffff;
+    --text: #1d1d1b;
+    --muted: #6b6a66;
+    --border: #e3e1dc;
+    --accent: #2f5d50;
+    --accent-text: #ffffff;
+    --user-bubble: #2f5d50;
+    --user-text: #ffffff;
+    --bot-bubble: #ffffff;
+    --error: #b3261e;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #161715;
+      --surface: #1f201e;
+      --text: #ecebe7;
+      --muted: #a09f9a;
+      --border: #33342f;
+      --accent: #7fb8a4;
+      --accent-text: #10201a;
+      --user-bubble: #2f5d50;
+      --user-text: #f2f7f5;
+      --bot-bubble: #1f201e;
+      --error: #f2b8b5;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #161715; --surface: #1f201e; --text: #ecebe7; --muted: #a09f9a; --border: #33342f;
+    --accent: #7fb8a4; --accent-text: #10201a; --user-bubble: #2f5d50; --user-text: #f2f7f5;
+    --bot-bubble: #1f201e; --error: #f2b8b5;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    padding: 14px 16px; border-bottom: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  }
+  header h1 { font-size: 17px; margin: 0; font-weight: 600; }
+  header p { margin: 0; font-size: 13px; color: var(--muted); }
+  button {
+    font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); padding: 8px 14px;
+  }
+  button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  button:disabled { opacity: .5; cursor: default; }
+  main { flex: 1; overflow-y: auto; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .msg { display: flex; margin: 10px 0; }
+  .msg.user { justify-content: flex-end; }
+  .bubble {
+    max-width: 85%; padding: 10px 14px; border-radius: 14px; overflow-wrap: anywhere;
+    border: 1px solid var(--border); background: var(--bot-bubble);
+  }
+  .msg.user .bubble { background: var(--user-bubble); color: var(--user-text); border-color: var(--user-bubble); white-space: pre-wrap; }
+  .bubble p { margin: 0 0 8px; } .bubble p:last-child { margin-bottom: 0; }
+  .bubble ul { margin: 4px 0 8px; padding-left: 20px; }
+  .bubble code { font-size: 14px; background: var(--bg); padding: 1px 4px; border-radius: 4px; }
+  .error { color: var(--error); }
+  .welcome { color: var(--muted); text-align: center; padding: 32px 0 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 12px; }
+  .chips button { font-size: 14px; border-radius: 999px; }
+  footer { border-top: 1px solid var(--border); background: var(--surface); }
+  form.composer { display: flex; gap: 8px; align-items: flex-end; }
+  textarea {
+    flex: 1; font: inherit; resize: none; min-height: 44px; max-height: 200px;
+    padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text);
+  }
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  #login { flex: 1; display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #login form {
+    width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 24px; display: grid; gap: 12px;
+  }
+  #login h2 { margin: 0; font-size: 20px; }
+  #login input {
+    font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--bg); color: var(--text);
+  }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Chief of Staff</h1>
+      <p>Reminds, warns and drafts. Never acts without your yes.</p>
+    </div>
+    <button id="newChat" type="button" hidden>New chat</button>
+  </header>
+
+  <section id="login">
+    <form id="loginForm">
+      <h2>Sign in</h2>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Password" required>
+      <button class="primary" type="submit">Open chat</button>
+      <div id="loginError" class="error" role="alert"></div>
+    </form>
+  </section>
+
+  <main id="chat" hidden>
+    <div class="wrap" id="messages" aria-live="polite">
+      <div class="welcome" id="welcome">
+        <div>What can I help you with?</div>
+        <div class="chips">
+          <button type="button" data-prompt="Brief me on today.">Brief me on today</button>
+          <button type="button" data-prompt="What's coming up this week, and what should I prepare?">This week</button>
+          <button type="button" data-prompt="What are my open items and deadlines?">Open items</button>
+          <button type="button" data-prompt="Draft a reply to this email:&#10;&#10;">Draft a reply</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer id="footer" hidden>
+    <div class="wrap">
+      <form class="composer" id="composer">
+        <textarea id="input" rows="1" placeholder="Message your chief of staff…" aria-label="Message"></textarea>
+        <button class="primary" id="send" type="submit">Send</button>
+      </form>
+      <div class="note">No live Gmail or Calendar access yet: answers use the saved memory and anything you paste here.</div>
+    </div>
+  </footer>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const store = {
+    get(k) { try { return sessionStorage.getItem(k); } catch { return null; } },
+    set(k, v) { try { sessionStorage.setItem(k, v); } catch {} },
+    del(k) { try { sessionStorage.removeItem(k); } catch {} },
+  };
+
+  let password = store.get("cos-pw") || "";
+  let history = [];
+  try { history = JSON.parse(store.get("cos-history") || "[]"); } catch { history = []; }
+  let busy = false;
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function inline(s) {
+    return escapeHtml(s)
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/`([^`]+)`/g, "<code>$1</code>");
+  }
+  function render(md) {
+    const lines = md.split("\n");
+    let html = "", list = false, para = [];
+    const flush = () => { if (para.length) { html += "<p>" + para.map(inline).join("<br>") + "</p>"; para = []; } };
+    for (const line of lines) {
+      const item = line.match(/^\s*[-*•]\s+(.*)$/) || line.match(/^\s*\d+[.)]\s+(.*)$/);
+      const heading = line.match(/^#{1,6}\s+(.*)$/);
+      if (item) { flush(); if (!list) { html += "<ul>"; list = true; } html += "<li>" + inline(item[1]) + "</li>"; continue; }
+      if (list) { html += "</ul>"; list = false; }
+      if (heading) { flush(); html += "<p><strong>" + inline(heading[1]) + "</strong></p>"; }
+      else if (!line.trim()) flush();
+      else para.push(line);
+    }
+    flush(); if (list) html += "</ul>";
+    return html;
+  }
+
+  function addBubble(role, text) {
+    $("welcome").hidden = true;
+    const row = document.createElement("div");
+    row.className = "msg " + role;
+    const b = document.createElement("div");
+    b.className = "bubble";
+    if (role === "user") b.textContent = text; else b.innerHTML = render(text);
+    row.appendChild(b);
+    $("messages").appendChild(row);
+    $("chat").scrollTop = $("chat").scrollHeight;
+    return b;
+  }
+
+  function showChat() {
+    $("login").hidden = true;
+    $("chat").hidden = false; $("footer").hidden = false; $("newChat").hidden = false;
+    for (const m of history) addBubble(m.role, m.content);
+    $("input").focus();
+  }
+
+  async function api(payload) {
+    return fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-app-password": password },
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async function errorText(res) {
+    try { return (await res.json()).error || ("Error " + res.status); } catch { return "Error " + res.status; }
+  }
+
+  $("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    $("loginError").textContent = "";
+    password = $("password").value;
+    try {
+      const res = await api({ check: true });
+      if (!res.ok) { $("loginError").textContent = await errorText(res); return; }
+      store.set("cos-pw", password);
+      showChat();
+    } catch { $("loginError").textContent = "Can't reach the server. Check your connection."; }
+  });
+
+  async function send(text) {
+    if (busy || !text.trim()) return;
+    busy = true; $("send").disabled = true;
+    history.push({ role: "user", content: text });
+    addBubble("user", text);
+    const bubble = addBubble("assistant", "…");
+    let answer = "";
+    try {
+      const res = await api({ messages: history.slice(-40) });
+      if (res.status === 401) { store.del("cos-pw"); location.reload(); return; }
+      if (!res.ok || !res.body) throw new Error(await errorText(res));
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        answer += dec.decode(value, { stream: true });
+        bubble.innerHTML = render(answer);
+        $("chat").scrollTop = $("chat").scrollHeight;
+      }
+      if (!answer.trim()) throw new Error("Empty answer. Please try again.");
+      history.push({ role: "assistant", content: answer });
+      store.set("cos-history", JSON.stringify(history));
+    } catch (err) {
+      history.pop();
+      bubble.innerHTML = '<span class="error">' + escapeHtml(err.message || "Something went wrong.") + "</span>";
+    } finally {
+      busy = false; $("send").disabled = false; $("input").focus();
+    }
+  }
+
+  $("composer").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = $("input").value;
+    $("input").value = ""; $("input").style.height = "";
+    send(text);
+  });
+  $("input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); $("composer").requestSubmit(); }
+  });
+  $("input").addEventListener("input", (e) => {
+    e.target.style.height = "auto"; e.target.style.height = Math.min(e.target.scrollHeight, 200) + "px";
+  });
+  document.querySelectorAll("[data-prompt]").forEach((b) => b.addEventListener("click", () => {
+    const p = b.getAttribute("data-prompt");
+    if (p.endsWith("\n\n")) { $("input").value = p; $("input").focus(); } else send(p);
+  }));
+  $("newChat").addEventListener("click", () => {
+    history = []; store.del("cos-history");
+    $("messages").querySelectorAll(".msg").forEach((n) => n.remove());
+    $("welcome").hidden = false;
+  });
+
+  // Netlify team login may already grant access; otherwise show the password form.
+  api({ check: true }).then((r) => {
+    if (r.ok) showChat(); else if (password) { store.del("cos-pw"); password = ""; }
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>

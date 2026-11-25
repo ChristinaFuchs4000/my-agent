@@ -1,0 +1,14 @@
+{
+  "name": "my-agent-chat",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-prompt.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.8.0"
+  },
+  "devDependencies": {
+    "@netlify/functions": "6.1.1"
+  }
+}
