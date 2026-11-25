@@ -1,6 +1,6 @@
 # Memory
 
-What the agent has learned so far. Read this at the start of a session, together with `CLAUDE.md` (email and calendar rule book) and `CHIEF_OF_STAFF.md` (Telegram chief of staff rule book). Last updated: 2026-11-25.
+What the agent has learned so far. Read this at the start of a session, together with `CLAUDE.md` (email and calendar rule book) and `CHIEF_OF_STAFF.md` (chief of staff rule book for the web chat). Last updated: 2026-11-25.
 
 ## About me
 
@@ -39,6 +39,13 @@ What the agent has learned so far. Read this at the start of a session, together
 - 11:30–12:30 Lunch
 - 13:00–15:00 Nap
 - 15:00–17:00 C-level discussion
+
+## My chief of staff web chat
+
+- Live at https://my-agent-chief-of-staff.netlify.app (Netlify project `my-agent-chief-of-staff`), went live 2026-11-25.
+- Only people signed in to my Netlify team can open it. It uses Claude through Netlify AI Gateway.
+- Code: `web/index.html` (chat page) and `netlify/functions/chat.mts` (server). The rule book and this memory are bundled in at each Netlify build.
+- No live Gmail or Calendar access yet: that needs a Google Cloud login setup.
 
 ## Rule book questions still open
 
