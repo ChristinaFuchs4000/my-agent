@@ -1,5 +1,9 @@
 # My email and calendar agent: rule book
 
+**Start of every session:** read my memory file first, and keep it up to date when you learn something new about me, my people or my open items.
+
+@MEMORY.md
+
 ## Mega-rules (these always come first)
 
 1. **Never send an email. Only draft.**
